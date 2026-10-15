@@ -35,6 +35,11 @@ mod tests {
 
     fn configured_backends(backend_override: Option<Backends>) -> Backends {
         let mut options = NativeOptions::default();
+        // Seed all backends explicitly: NativeOptions::default reads WGPU_BACKEND.
+        // The fixture must prove configure removes GL even when tests run under DX12.
+        if let WgpuSetup::CreateNew(create) = &mut options.wgpu_options.wgpu_setup {
+            create.instance_descriptor.backends = Backends::all();
+        }
         configure(&mut options, backend_override, None);
         let WgpuSetup::CreateNew(create) = options.wgpu_options.wgpu_setup else {
             panic!("default native options must create a wgpu instance");
@@ -44,11 +49,6 @@ mod tests {
 
     #[test]
     fn windows_default_initializes_only_dx12() {
-        // eframe's own default (PRIMARY | GL) would initialize OpenGL as well.
-        let WgpuSetup::CreateNew(eframe_default) = NativeOptions::default().wgpu_options.wgpu_setup else {
-            panic!("default native options must create a wgpu instance");
-        };
-        assert!(eframe_default.instance_descriptor.backends.contains(Backends::GL));
         assert_eq!(configured_backends(None), Backends::DX12);
     }
 

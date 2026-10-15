@@ -1,6 +1,6 @@
 # UI parity with PowerPoint
 
-> **Last reviewed:** 2026-10-14 · **Last updated:** 2026-10-14 · **Change:** major (community PR wave 2026-10-14: 14 new dialogs (41 in all), Eyedropper, Export button, New Window, Grid Options, WordArt gallery and handles, Slide Sorter sections, Quick Access Toolbar, Format Background and Format Shape depth, rich-text clipboard; duplicated rows and headers folded; previous: minor, File tab / Backstage, #76) · **Target:** Microsoft PowerPoint for Mac 16.113 (Microsoft 365)
+> **Last reviewed:** 2026-10-14 · **Last updated:** 2026-10-15 · **Change:** minor (ChatGPT presentation assistant, visual tools, search and context references); previously major (community PR wave 2026-10-14: 14 new dialogs (41 in all), Eyedropper, Export button, New Window, Grid Options, WordArt gallery and handles, Slide Sorter sections, Quick Access Toolbar, Format Background and Format Shape depth, rich-text clipboard; duplicated rows and headers folded; previous: minor, File tab / Backstage, #76) · **Target:** Microsoft PowerPoint for Mac 16.113 (Microsoft 365)
 
 How DeckCraft looks and feels next to PowerPoint: the shell, the ribbon, menus, panes, dialogs,
 direct manipulation, keyboard and precision. Observations of PowerPoint are kept locally in
@@ -13,6 +13,17 @@ While editing slide text, empty bulleted and numbered paragraphs show gray marke
 indent, including the first click into a content placeholder and the paragraph after Enter.
 Typing gives the marker its normal text color. These temporary markers are hidden when editing
 ends and are omitted from thumbnails, slide shows and exports.
+
+## ChatGPT sidebar
+
+A title-bar button opens a resizable right sidebar with browser sign-in, optional protected JSON
+import, account/model settings, default-on web search, streamed Markdown replies, one in-memory
+conversation and Clear conversation/Sign out controls. Selected text, objects or a slide can be
+attached through Add to Chat in a floating selection toolbar or the right-click menu. Compact links
+select their source; draft references have hover/focus remove controls. The assistant can inspect
+rendered slides and invoke every registered engine feature with normal Undo. The web build shows a
+desktop availability notice. [Setup, tools and limitations](chatgpt.md). This extension does not raise
+the existing PowerPoint parity score.
 
 ## Shell
 
@@ -165,6 +176,7 @@ consistency is open (#73, #56).
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-15 | minor | ChatGPT sidebar with browser sign-in, all engine commands, batches, slide images, web search, referenced-file reads and stable selection links; offline/native checks documented in docs/chatgpt.md |
 | 2026-10-14 | minor | Gray list markers on empty paragraphs while editing; caret keeps the list indent before typing |
 | 2026-10-14 | minor | Community PR wave folded: one row each for Format Shape, Dialogs (41, listed from `dialogs.rs`), Animation Pane (timeline is in), window, Quick Access Toolbar, Format Background, rulers, image paste, context menus, exact size and edit points; estimates re-totalled (~26–46 h) |
 | 2026-10-13 | trivial | Eyedropper in the colour menus (#367) |

@@ -20,6 +20,48 @@
   (through MCP) can drive.
 </p>
 
+## ChatGPT features in this fork
+
+This [fork](https://github.com/asadkhalid-softdev/deckcraft) adds a collapsible **ChatGPT** sidebar
+to [DeckCraft](https://github.com/storytold/deckcraft). The original README continues below and is
+also preserved in [README_original.md](README_original.md).
+
+- **Sign in with your ChatGPT account** in your browser. DeckCraft stores credentials privately
+  and reuses the login after restart; account settings include a model picker and optional JSON import.
+- **Control the presentation:** the assistant can discover every registered engine command, create
+  and reorder slides, add/edit/delete/move/resize objects, format text, align/group/order elements,
+  edit tables/charts/media, notes, masters/layouts, themes, animations and transitions. Normal Undo applies.
+- **Check the design visually:** rendered-slide images let the assistant inspect the actual layout;
+  batched commands make larger edits efficient. Features not yet implemented in DeckCraft remain unavailable.
+- **Add context:** select text or objects and choose **Add to Chat** from the floating toolbar or
+  right-click menu. Compact reference links reveal their source; hover and click **×** to remove
+  a draft reference. Referenced file paths can be read as context without replacing the deck.
+- **Web search is enabled by default**, with **Enable web search** in ChatGPT settings to turn it
+  off. Replies preview Markdown tables, lists, code blocks and clickable source citations.
+- **Clear conversation** resets chat and pending actions while retaining login. **Sign out** removes
+  runtime credentials and attempts session revocation. History and references are currently in memory only.
+
+Build this fork using the getting-started instructions below (clone this fork's URL), then open
+**ChatGPT** in the desktop title bar and click **Continue with ChatGPT**. Complete authorization
+in your browser and return to DeckCraft. No API key, Codex CLI, Python or separate integration is needed.
+
+For advanced JSON authentication, run the bundled helper in native Windows PowerShell:
+
+```powershell
+cargo run -p deckcraft-ui-egui --bin deckcraft-chatgpt-login
+```
+
+After **Sign-in verified**, open the export path printed by the helper (normally
+`%APPDATA%\DeckCraft\chatgpt-login\deckcraft-account.json`) and paste its complete contents into
+**ChatGPT → ⋯ → ChatGPT settings → Advanced: import authentication JSON → Protected credential
+file JSON**, then click **Import and connect**. Normal browser sign-in handles this automatically.
+
+[Detailed setup, capabilities, file-reading limits and troubleshooting](docs/chatgpt.md).
+ChatGPT is an optional online desktop feature: requests and necessary presentation/file context go
+to OpenAI. Keep credential JSON private and out of Git. Live model/search access depends on your account.
+
+---
+
 <p align="center">
   <img alt="Status: early development" src="https://img.shields.io/badge/status-early%20development-f26b1d?style=flat-square">
   <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue?style=flat-square">

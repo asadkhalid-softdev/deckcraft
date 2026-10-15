@@ -9,6 +9,7 @@
 pub mod animtimeline;
 pub mod backstage;
 pub mod canvas;
+pub mod chatgpt;
 pub mod control;
 pub mod credits;
 pub mod dialogs;
@@ -237,6 +238,8 @@ pub enum ViewMode {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct UiState {
+    pub chatgpt_model: String,
+    pub chatgpt_web_search: bool,
     pub brightness: theme::Brightness,
     pub tab: String,
     pub ribbon_collapsed: bool,
@@ -279,6 +282,8 @@ pub struct UiState {
 impl Default for UiState {
     fn default() -> Self {
         UiState {
+            chatgpt_model: String::new(),
+            chatgpt_web_search: true,
             brightness: theme::Brightness::Light,
             tab: "Home".into(),
             ribbon_collapsed: false,
@@ -331,6 +336,7 @@ impl UiState {
     pub fn sanitized(mut self) -> UiState {
         let d = UiState::default();
         let within = |v: f32, lo: f32, hi: f32, default: f32| if v.is_finite() { v.clamp(lo, hi) } else { default };
+        self.chatgpt_model = self.chatgpt_model.chars().take(256).collect();
         self.zoom = self.zoom.filter(|z| z.is_finite() && *z > 0.0).map(|z| z.clamp(*ZOOM_RANGE.start(), *ZOOM_RANGE.end()));
         self.sorter_zoom = within(self.sorter_zoom, 0.5, 3.0, d.sorter_zoom);
         self.ui_scale = within(self.ui_scale, 0.5, 3.0, d.ui_scale);
@@ -450,6 +456,8 @@ pub struct SlideApp {
     anim_preview: Option<AnimPreview>,
     /// Audio/video playback (editor control bar, slide show, `media.*` commands).
     pub media: media::MediaHost,
+    pub chatgpt: chatgpt::State,
+    pub(crate) ctx: Option<egui::Context>,
     pub status: Option<(String, f64)>,
     /// A presentation being read in the background, with its progress window ([`opening`]).
     pub opening: Option<opening::Opening>,
@@ -543,6 +551,8 @@ impl SlideApp {
             show: None,
             anim_preview: None,
             media: media::MediaHost::new(audio_out),
+            chatgpt: chatgpt::State::default(),
+            ctx: None,
             status: None,
             opening: None,
             toast: None,
@@ -651,7 +661,9 @@ impl SlideApp {
     /// Run a command by id (UI commands here, everything else in the engine). Errors show in the
     /// status bar and are returned.
     pub fn run(&mut self, id: &str, params: Value) -> Result<Value, String> {
-        let r = if UI_COMMANDS.iter().any(|c| c.0 == id) {
+        let r = if let Some(result) = chatgpt::command(self, id, &params) {
+            result
+        } else if UI_COMMANDS.iter().any(|c| c.0 == id) {
             self.run_ui(id, &params)
         } else {
             self.session.execute(id, &params).map_err(|e| e.to_string())
@@ -1514,6 +1526,8 @@ impl SlideApp {
 
     /// Per-frame logic before layout: styles, control requests, screenshots, shortcuts.
     pub fn logic(&mut self, ctx: &egui::Context) {
+        self.ctx = Some(ctx.clone());
+        chatgpt::poll(self, ctx);
         let scale = self.ui.ui_scale.clamp(0.5, 3.0);
         if (ctx.zoom_factor() - scale).abs() > 1e-3 {
             ctx.set_zoom_factor(scale);
@@ -1793,6 +1807,7 @@ impl SlideApp {
         self.keyboard(&ctx);
         self.sync_backstage();
         ribbon::title_bar(self, ui);
+        chatgpt::show_settings(self, ui.ctx());
         if self.backstage.is_none() && self.session.active().is_some() {
             ribbon::show(self, ui);
             status::status_bar(self, ui);
@@ -1810,6 +1825,7 @@ impl SlideApp {
             if self.session.active().is_none() {
                 return;
             }
+            chatgpt::show(self, ui);
             match self.ui.view {
                 ViewMode::Sorter => sorter::show(self, ui),
                 ViewMode::NotesPage => sorter::notes_page(self, ui),
@@ -1835,6 +1851,7 @@ impl SlideApp {
         toast::show(self, &ctx);
         dialogs::show(self, &ctx);
         menus::palette(self, &ctx);
+        chatgpt::selection_toolbar(self, &ctx);
         for url in std::mem::take(&mut self.pending_urls) {
             ctx.open_url(egui::OpenUrl::new_tab(url));
         }

@@ -1080,6 +1080,10 @@ fn context_menu(app: &mut SlideApp, resp: &egui::Response) {
         app.session.tool.edit_vertex = Some((path, index));
     }
     resp.context_menu(|ui| {
+        if crate::chatgpt::can_attach(app) && ui.button("Add to Chat").clicked() {
+            let _ = app.run("ui.chatgpt.attachSelection", json!({}));
+            ui.close();
+        }
         let editing = app.session.active().and_then(|d| app.session.tool.editing_points(d).and_then(|id| d.shape(id).cloned()));
         if let Some(sh) = editing {
             if let Some((path, index)) = app.session.tool.edit_vertex {

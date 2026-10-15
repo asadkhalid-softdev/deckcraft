@@ -12,3 +12,13 @@ packaging/env.sh
 /packaging/linux/flatpak/cargo-sources.json
 /build-flatpak/
 /.flatpak-builder/
+
+# Local ChatGPT sessions and credentials; never source files.
+.env
+.env.*
+!.env.example
+auth.json
+**/chatgpt-direct/
+**/chatgpt-login/
+deckcraft-account*.json
+chatgpt-account*.json

@@ -82,6 +82,7 @@ pub fn all_commands(app: &SlideApp) -> Value {
     for (id, label, sc, params) in crate::UI_COMMANDS {
         v.push(json!({"id": id, "label": label, "shortcut": sc, "params": params, "enabled": true, "ui": true}));
     }
+    v.extend(crate::chatgpt::commands(app));
     Value::Array(v)
 }
 

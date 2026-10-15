@@ -1,6 +1,6 @@
 # DeckCraft architecture
 
-> **Last reviewed:** 2026-10-14 · **Last updated:** 2026-10-14 · **Change:** minor (community PR wave 2026-10-14: 320 engine commands, 41 dialogs, the `metafile` crate, 1,641 tests; duplicated L2/L5/L6 rows and headers folded; previous: minor, transition frames) · **Target:** Microsoft PowerPoint for Mac 16.113 (Microsoft 365)
+> **Last reviewed:** 2026-10-14 · **Last updated:** 2026-10-15 · **Change:** minor (ChatGPT presentation assistant, visual tools, search and context references); previously minor (community PR wave 2026-10-14: 320 engine commands, 41 dialogs, the `metafile` crate, 1,641 tests; duplicated L2/L5/L6 rows and headers folded; previous: minor, transition frames) · **Target:** Microsoft PowerPoint for Mac 16.113 (Microsoft 365)
 
 How DeckCraft is built today. The binding rules (layering, everything is a command, thin UI, never
 break wasm, never crash) are in [AGENTS.md](../AGENTS.md) §3–§5; this document describes what
@@ -68,6 +68,25 @@ overlays an invisible real-text layer with embedded font subsets.
   ignore unknown fields; `.slidecraft` files from before the rename still open.
 - Formats and their gaps: [file-format-parity.md](file-format-parity.md).
 
+## ChatGPT presentation assistant
+
+`ui-egui::chatgpt` owns an ephemeral, active-presentation-scoped chat. The native background worker
+uses OpenAI OAuth/Responses directly, with PKCE/OIDC browser sign-in and protected per-user
+credential files; it has no dependency on a sibling app or external helper. The bundled Rust helper
+is an optional credential JSON export path. Preferences persist only the model and web-search flag.
+
+Seven tools expose command discovery, paginated structured inspection, normal engine commands,
+bounded batches, rendered slide images, editor input and user-referenced file reads. Command calls
+return to the UI thread and use the engine's normal validation/Undo; dialogs and pickers are filtered.
+Every tool checks active document/thread/turn ownership. Rendered PNGs are sent as image inputs,
+not base64 text for the model to guess at. Reads are authorized from user messages on the UI thread
+and run on the worker, with pagination and extraction limits. Clear, sign-out and document changes
+cancel the worker. Native transport/storage are excluded from WASM.
+
+Selection references use stable slide/master/layout and shape IDs. Composer links and sent-message
+links restore the source selection. Markdown replies render in egui; URL annotations become source
+links, and model-provided images are not fetched. See [ChatGPT setup and limits](chatgpt.md).
+
 ## Quality gates
 
 `cargo xtask ci`: rustfmt check, clippy `-D warnings`, tests, layering, asset attribution
@@ -79,6 +98,7 @@ macOS, Windows, Linux, FreeBSD and web artifacts.
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-15 | minor | ChatGPT sidebar with browser sign-in, all engine commands, batches, slide images, web search, referenced-file reads and stable selection links; offline/native checks documented in docs/chatgpt.md |
 | 2026-10-14 | minor | Community PR wave folded: one L2/L5/L6 row each; command registry 320 (`cmd!` registrations in `cmd/*`), 41 dialogs (titled in `dialogs.rs`), 202k lines, 24 crates (`metafile` added at L0), 1,641 tests. The per-PR rows below give the counts each PR saw on its own branch |
 | 2026-10-14 | minor | Size and Position dialog (`shape.sizePosition`): position, size, rotation, scale and lock aspect in one undo step. 227 commands, 28 dialogs |
 | 2026-10-14 | trivial | Command registry: 228 (`comment.next`, `comment.prev`) |

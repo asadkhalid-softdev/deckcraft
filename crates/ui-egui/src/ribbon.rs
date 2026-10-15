@@ -85,6 +85,9 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 .layout(egui::Layout::right_to_left(egui::Align::Center)),
         );
         right.spacing_mut().item_spacing.x = 6.0;
+        if right.selectable_label(app.chatgpt.open, "ChatGPT").clicked() {
+            let _ = app.run("ui.chatgpt.toggle", json!({}));
+        }
         if icon_toggle(&mut right, Icon::Search, "Search commands (⇧⌘P)", true, false).clicked() {
             app.palette = Some((String::new(), 0));
         }
